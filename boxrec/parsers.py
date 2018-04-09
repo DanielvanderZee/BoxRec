@@ -53,7 +53,7 @@ class FightParser(BaseParser):
 
         return left, right
 
-    def clean_rating(self, raw):
+    def extract_alphanumeric(self, raw):
         if raw is None:
             return None
 
@@ -64,8 +64,8 @@ class FightParser(BaseParser):
             FightParser.BASE_DOM_PATH + \
                 '[./td/b/text() = "before fight"]/td[position() = 1 or position() =3]'
         )
-        rating_left = self.clean_rating(rating_row[0].text)
-        rating_right = self.clean_rating(rating_row[1].text)
+        rating_left = self.extract_alphanumeric(rating_row[0].text)
+        rating_right = self.extract_alphanumeric(rating_row[1].text)
 
         return rating_left, rating_right
     
@@ -75,8 +75,8 @@ class FightParser(BaseParser):
              FightParser.BASE_DOM_PATH + \
                 '[./td/b/text() = "after fight"]/td[position() = 1 or position() =3]'  
         )
-        rating_left = self.clean_rating(rating_row[0].text)
-        rating_right = self.clean_rating(rating_row[1].text)
+        rating_left = self.extract_alphanumeric(rating_row[0].text)
+        rating_right = self.extract_alphanumeric(rating_row[1].text)
 
         return rating_left, rating_right
     
@@ -86,10 +86,10 @@ class FightParser(BaseParser):
         values that are not included on Boxrec.com"""
         age_row = tree.xpath(
                 FightParser.BASE_DOM_PATH + \
-                '[./td/b/text() = "age"]/td[position() = 1 or position() =3]'
+                '[./td/b/text() = "age"]/td[position() = 1 or position() = 3]'
         )
-        age_left = self.clean_rating(age_row[0].text)
-        age_right = self.clean_rating(age_row[1].text)
+        age_left = self.extract_alphanumeric(age_row[0].text)
+        age_right = self.extract_alphanumeric(age_row[1].text)
         
         return age_left, age_right
     
@@ -98,21 +98,18 @@ class FightParser(BaseParser):
         values that are not included on Boxrec.com"""
         stance_row = tree.xpath(
                 FightParser.BASE_DOM_PATH + \
-                '[./td/b/text() = "stance"]/td[position() = 1 or position() =3]'
+                '[./td/b/text() = "stance"]/td[position() = 1 or position() = 3]'
         )
         try:
             stance_left = stance_row[0].text.rstrip()
         except AttributeError as e:
             stance_left = None
-        except:
-            raise FailedToParse('Stance of left boxer could not be determined.')
+
         try:
             stance_right = stance_row[1].text.rstrip()
         except AttributeError as e:
             stance_right = None
-        except:
-            raise FailedToParse('Stance of right boxer could not be determined.')
-        
+
         return stance_left, stance_right
     
     def get_heigth_cm(self,tree):
@@ -120,21 +117,23 @@ class FightParser(BaseParser):
         values that are not included on Boxrec.com"""
         height_row = tree.xpath(
                 FightParser.BASE_DOM_PATH + \
-                '[./td/b/text() = "height"]/td[position() = 1 or position() =3]'
+                '[./td/b/text() = "height"]/td[position() = 1 or position() = 3]'
         )
+
         try:
-            height_left = int(re.findall('\d+',height_row[0].text.split('/')[1].strip())[0])
-        except AttributeError as e:
+            height_left = int(
+                re.findall('\d+',height_row[0].text.split('/')[1].strip())[0]
+            )
+        except (AttributeError, IndexError) as e:
             height_left = None
-        except:
-            raise FailedToParse('Height of left boxer could not be determined.')
+
         try:
-            height_right = int(re.findall('\d+',height_row[1].text.split('/')[1].strip())[0])
-        except AttributeError as e:
+            height_right = int(
+                re.findall('\d+',height_row[1].text.split('/')[1].strip())[0]
+            )
+        except (AttributeError, IndexError) as e:
             height_right = None
-        except:
-            raise FailedToParse('Height of right boxer could not be determined.')
-        
+
         return height_left, height_right
         
     def get_reach_cm(self,tree):
@@ -145,17 +144,18 @@ class FightParser(BaseParser):
                 '[./td/b/text() = "reach"]/td[position() = 1 or position() =3]'
         )
         try:
-            reach_left = int(re.findall('\d+',reach_row[0].text.split('/')[1].strip())[0])
-        except AttributeError as e:
+            reach_left = int(
+                re.findall('\d+',reach_row[0].text.split('/')[1].strip())[0]
+            )
+        except (AttributeError, IndexError) as e:
             reach_left = None
-        except:
-            raise FailedToParse('Reach of left boxer could not be determined.')
+
         try:
-            reach_right = int(re.findall('\d+',reach_row[1].text.split('/')[1].strip())[0])
-        except AttributeError as e:
+            reach_right = int(
+                re.findall('\d+',reach_row[1].text.split('/')[1].strip())[0]
+            )
+        except (AttributeError, IndexError) as e:
             reach_right = None
-        except:
-            raise FailedToParse('Reach of right boxer could not be determined.')
         
         return reach_left, reach_right
     
@@ -164,22 +164,22 @@ class FightParser(BaseParser):
         Output is a tuple with (win,loss,draw) for each boxer."""
         win_row = tree.xpath(
                 FightParser.BASE_DOM_PATH + \
-                '[./td/b/text() = "won"]/td[position() = 1 or position() =3]'
+                '[./td/b/text() = "won"]/td[position() = 1 or position() = 3]'
         )
-        win_left = self.clean_rating(win_row[0].text)
-        win_right = self.clean_rating(win_row[1].text)
+        win_left = self.extract_alphanumeric(win_row[0].text)
+        win_right = self.extract_alphanumeric(win_row[1].text)
         lose_row = tree.xpath(
                 FightParser.BASE_DOM_PATH + \
-                '[./td/b/text() = "lost"]/td[position() = 1 or position() =3]'
+                '[./td/b/text() = "lost"]/td[position() = 1 or position() = 3]'
         )
-        lose_left = self.clean_rating(lose_row[0].text)
-        lose_right = self.clean_rating(lose_row[1].text)
+        lose_left = self.extract_alphanumeric(lose_row[0].text)
+        lose_right = self.extract_alphanumeric(lose_row[1].text)
         drawn_row = tree.xpath(
                 FightParser.BASE_DOM_PATH + \
-                '[./td/b/text() = "drawn"]/td[position() = 1 or position() =3]'
+                '[./td/b/text() = "drawn"]/td[position() = 1 or position() = 3]'
         )
-        drawn_left = self.clean_rating(drawn_row[0].text)
-        drawn_right = self.clean_rating(drawn_row[1].text)
+        drawn_left = self.extract_alphanumeric(drawn_row[0].text)
+        drawn_right = self.extract_alphanumeric(drawn_row[1].text)
         
         return (win_left, lose_left, drawn_left), (win_right, lose_right, drawn_right)
 
@@ -227,11 +227,16 @@ class FightParser(BaseParser):
             hist_rating_right=rating_before_right,
             curr_rating_left=rating_after_left,
             curr_rating_right=rating_after_right,
-            age_left = age_left, age_right = age_right,
-            stance_left = stance_left, stance_right = stance_right,
-            height_left = height_left, height_right = height_right,
-            reach_left = reach_left, reach_right = reach_right,
-            record_left = wld_left, record_right = wld_right,
+            age_left=age_left,
+            age_right=age_right,
+            stance_left=stance_left,
+            stance_right=stance_right,
+            height_left=height_left,
+            height_right=height_right,
+            reach_left=reach_left,
+            reach_right=reach_right,
+            record_left=wld_left,
+            record_right=wld_right,
             winner=result
         )
 
